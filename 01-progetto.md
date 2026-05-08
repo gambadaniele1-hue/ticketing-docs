@@ -175,32 +175,7 @@ Chi richiede assistenza.
 
 ## 5. Flussi Principali
 
-### 5.1 Registrazione Tenant (Azienda)
-
-Il flusso di registrazione di una nuova azienda sulla piattaforma.
-
-```
-[1] Form registrazione      [2] Verifica               [3] Creazione
-    compilato dall'Admin ──►    sottodominio        ──►    tenant nel
-    futuro:                     disponibile?               DB globale.
-    - Nome azienda              No → errore
-    - Sottodominio              Sì → procedi
-    - Piano (shared/dedicated)
-    - Email Admin
-    - Password Admin
-                                                               │
-                                                               ▼
-[6] Admin inserisce     [5] Microservizio Go        [4] Creazione DB tenant
-    OTP → account   ◄──    invia OTP via mail  ◄──     + utente Admin
-    verificato →           all'Admin.                  nel DB tenant.
-    tenant attivo.         (6 cifre, 10 min)
-```
-
-Il sistema crea in sequenza: il record tenant nel DB globale, il database dedicato (o condiviso in base al piano) tramite il job `CreateTenantMysqlUser`, e infine l'utente Admin nel nuovo DB tenant tramite il job `CreateTenantAdminUser`. Solo dopo la verifica OTP il tenant risulta pienamente attivo.
-
-> **Nota:** In una versione futura è previsto un processo di approvazione manuale o verifica del pagamento prima dell'attivazione del tenant.
-
-### 5.2 Registrazione e Verifica Email (Utente)
+### 5.1 Registrazione e Verifica Email
 
 ```
 [1] Compilazione form        [2] Microservizio Go        [3] Utente inserisce
@@ -216,7 +191,7 @@ Il sistema crea in sequenza: il record tenant nel DB globale, il database dedica
 
 L'OTP viene salvato nel DB globale in forma **hashata** con timestamp di creazione, flag `used` e contatore dei tentativi errati. Dopo 3 tentativi sbagliati l'endpoint viene bloccato temporaneamente.
 
-### 5.3 Login — Flusso A (Sottodominio Sconosciuto)
+### 5.2 Login — Flusso A (Sottodominio Sconosciuto)
 
 L'utente non ricorda l'indirizzo della sua azienda e accede dalla pagina principale.
 
@@ -237,7 +212,7 @@ L'utente non ricorda l'indirizzo della sua azienda e accede dalla pagina princip
 
 L'OTP sostituisce completamente la password in questo flusso: rappresenta esso stesso la prova di identità.
 
-### 5.4 Login — Flusso B (Sottodominio Noto)
+### 5.3 Login — Flusso B (Sottodominio Noto)
 
 L'utente conosce l'indirizzo diretto della propria azienda (es. `azienda.piattaforma.com`).
 
@@ -251,7 +226,7 @@ L'utente conosce l'indirizzo diretto della propria azienda (es. `azienda.piattaf
                                                         Accesso al tenant.
 ```
 
-### 5.5 Ciclo di Vita del Ticket
+### 5.4 Ciclo di Vita del Ticket
 
 ```
 [1] CREAZIONE          [2] SMISTAMENTO         [3] LAVORAZIONE        [4] CHIUSURA
@@ -272,7 +247,7 @@ SLA applicata.         manuale)                 note interne.          salvata.
 | `resolved` | Problema risolto |
 | `closed` | Chiuso definitivamente |
 
-### 5.6 Il Triage
+### 5.5 Il Triage
 
 Quando un ticket arriva senza categoria o team associato entra in una coda **Triage**, dove agenti o capi team lo analizzano e lo smistano manualmente.
 
@@ -442,4 +417,4 @@ Mancato rinnovo / richiesta cancellazione
 
 ---
 
-*Documento v1.1 — Progetto di Informatica, quinto anno*
+*Documento v1.2 — Progetto di Informatica, quinto anno*
