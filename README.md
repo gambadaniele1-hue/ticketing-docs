@@ -47,10 +47,10 @@ Ogni azienda opera in un ambiente completamente isolato (tenant), mantenendo i p
 
 | Repository | Descrizione |
 |---|---|
-| [`ticketing-api`](https://github.com/tuousername/ticketing-api) | Backend Laravel — API REST |
-| [`ticketing-mail`](https://github.com/tuousername/ticketing-mail) | Microservizio Go per l'invio email |
-| [`ticketing-app`](https://github.com/tuousername/ticketing-app) | Frontend Lovable |
-| [`ticketing-docs`](https://github.com/tuousername/ticketing-docs) | ← Sei qui — Documentazione |
+| [`ticketing-api`](https://github.com/gambadaniele1-hue/ticketing-api) | Backend Laravel — API REST |
+| [`ticketing-mail`](https://github.com/gambadaniele1-hue/ticketing-mail) | Microservizio Go per l'invio email |
+| [`ticketing-app`](https://github.com/gambadaniele1-hue/ticketing-app) | Frontend Lovable |
+| [`ticketing-docs`](https://github.com/gambadaniele1-hue/ticketing-docs) | ← Sei qui — Documentazione |
 
 ---
 
