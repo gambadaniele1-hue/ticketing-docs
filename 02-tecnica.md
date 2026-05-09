@@ -470,4 +470,4 @@ Tutti gli endpoint sono sotto `/api/v1/`. Le versioni future useranno `/api/v2/`
 
 ---
 
-_Documento v1.0 — Progetto di Informatica, quinto anno_
+_Documento v1.1 — Progetto di Informatica, quinto anno_
