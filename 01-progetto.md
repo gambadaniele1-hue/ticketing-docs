@@ -1,4 +1,5 @@
 # Sistema di Ticketing Multi-Tenant
+
 ## Documentazione di Progetto
 
 **Progetto:** Sistema di Ticketing Multi-Tenant Ibrido
@@ -60,13 +61,13 @@ Il microservizio viene invocato nei seguenti casi:
 - Notifiche email sugli aggiornamenti dei ticket.
 - Email di conferma alla cancellazione di un tenant.
 
-### Frontend — Lovable
+### Frontend — Claude Code
 
-Le interfacce utente sono sviluppate con **Lovable**, uno strumento per la generazione di UI moderne. Il frontend comunica con il backend esclusivamente tramite le API REST Laravel. Sono previste tre interfacce distinte:
+Le interfacce utente sono sviluppate con **Claude Code**, generando componenti React con Tailwind CSS. Il frontend comunica con il backend esclusivamente tramite le API REST Laravel. Sono previste tre interfacce distinte:
 
-- **Pannello Admin** — gestione utenti, team, categorie, SLA, statistiche.
-- **Pannello Agente / Capo Team** — coda ticket, lavorazione, note interne.
-- **Portale Cliente** — apertura ticket, storico, comunicazione con lo staff.
+- **Pannello Admin** — gestione utenti, team, categorie, SLA, macro. Dati reali via API.
+- **Pannello Agente / Capo Team** — visualizzazione funzionalità con dati mock.
+- **Portale Cliente** — visualizzazione funzionalità con dati mock.
 
 ### Storage allegati — Cloud Storage
 
@@ -74,17 +75,17 @@ I file allegati ai messaggi dei ticket vengono salvati su un servizio di **Cloud
 
 ### Riepilogo stack
 
-| Componente | Tecnologia | Versione |
-|---|---|---|
-| Backend API | Laravel (PHP) | 12.0 / PHP 8.2+ |
-| Multi-tenancy | stancl/tenancy | ^3.10 |
-| Autenticazione | firebase/php-jwt | ^7.0 |
-| Microservizio mail | Go | — |
-| Coda messaggi | Redis | — |
-| Database globale | MySQL | — |
-| Database tenant | MySQL | — |
-| Storage allegati | Cloud Storage (S3) | — |
-| Frontend | Lovable | — |
+| Componente         | Tecnologia                     | Versione        |
+| ------------------ | ------------------------------ | --------------- |
+| Backend API        | Laravel (PHP)                  | 12.0 / PHP 8.2+ |
+| Multi-tenancy      | stancl/tenancy                 | ^3.10           |
+| Autenticazione     | firebase/php-jwt               | ^7.0            |
+| Microservizio mail | Go                             | —               |
+| Coda messaggi      | Redis                          | —               |
+| Database globale   | MySQL                          | —               |
+| Database tenant    | MySQL                          | —               |
+| Storage allegati   | Cloud Storage (S3)             | —               |
+| Frontend           | Claude Code (React + Tailwind) | —               |
 
 ---
 
@@ -92,15 +93,15 @@ I file allegati ai messaggi dei ticket vengono salvati su un servizio di **Cloud
 
 ### Che cos'è il Multi-Tenancy?
 
-Il termine **multi-tenant** indica un'architettura software in cui una singola istanza dell'applicazione serve più clienti (detti *tenant*, cioè "inquilini"). Ogni azienda che si iscrive alla piattaforma ottiene il proprio ambiente isolato, come se avesse un'applicazione tutta sua, pur condividendo la stessa infrastruttura.
+Il termine **multi-tenant** indica un'architettura software in cui una singola istanza dell'applicazione serve più clienti (detti _tenant_, cioè "inquilini"). Ogni azienda che si iscrive alla piattaforma ottiene il proprio ambiente isolato, come se avesse un'applicazione tutta sua, pur condividendo la stessa infrastruttura.
 
 ### Perché "Ibrida"?
 
 Il progetto adotta un modello **ibrido** perché combina due approcci:
 
-| Componente | Approccio |
-|---|---|
-| Identità utenti e aziende | Database globale condiviso |
+| Componente                     | Approccio                    |
+| ------------------------------ | ---------------------------- |
+| Identità utenti e aziende      | Database globale condiviso   |
 | Dati operativi di ogni azienda | Database dedicato per tenant |
 
 Questa scelta bilancia efficienza economica con sicurezza e isolamento dei dati.
@@ -175,7 +176,32 @@ Chi richiede assistenza.
 
 ## 5. Flussi Principali
 
-### 5.1 Registrazione e Verifica Email
+### 5.1 Registrazione Tenant (Azienda)
+
+Il flusso di registrazione di una nuova azienda sulla piattaforma.
+
+```
+[1] Form registrazione      [2] Verifica               [3] Creazione
+    compilato dall'Admin ──►    sottodominio        ──►    tenant nel
+    futuro:                     disponibile?               DB globale.
+    - Nome azienda              No → errore
+    - Sottodominio              Sì → procedi
+    - Piano (shared/dedicated)
+    - Email Admin
+    - Password Admin
+                                                               │
+                                                               ▼
+[6] Admin inserisce     [5] Microservizio Go        [4] Creazione DB tenant
+    OTP → account   ◄──    invia OTP via mail  ◄──     + utente Admin
+    verificato →           all'Admin.                  nel DB tenant.
+    tenant attivo.         (6 cifre, 10 min)
+```
+
+Il sistema crea in sequenza: il record tenant nel DB globale, il database dedicato (o condiviso in base al piano) tramite il job `CreateTenantMysqlUser`, e infine l'utente Admin nel nuovo DB tenant tramite il job `CreateTenantAdminUser`. Solo dopo la verifica OTP il tenant risulta pienamente attivo.
+
+> **Nota:** In una versione futura è previsto un processo di approvazione manuale o verifica del pagamento prima dell'attivazione del tenant.
+
+### 5.2 Registrazione e Verifica Email (Utente)
 
 ```
 [1] Compilazione form        [2] Microservizio Go        [3] Utente inserisce
@@ -191,7 +217,7 @@ Chi richiede assistenza.
 
 L'OTP viene salvato nel DB globale in forma **hashata** con timestamp di creazione, flag `used` e contatore dei tentativi errati. Dopo 3 tentativi sbagliati l'endpoint viene bloccato temporaneamente.
 
-### 5.2 Login — Flusso A (Sottodominio Sconosciuto)
+### 5.3 Login — Flusso A (Sottodominio Sconosciuto)
 
 L'utente non ricorda l'indirizzo della sua azienda e accede dalla pagina principale.
 
@@ -212,7 +238,7 @@ L'utente non ricorda l'indirizzo della sua azienda e accede dalla pagina princip
 
 L'OTP sostituisce completamente la password in questo flusso: rappresenta esso stesso la prova di identità.
 
-### 5.3 Login — Flusso B (Sottodominio Noto)
+### 5.4 Login — Flusso B (Sottodominio Noto)
 
 L'utente conosce l'indirizzo diretto della propria azienda (es. `azienda.piattaforma.com`).
 
@@ -226,7 +252,7 @@ L'utente conosce l'indirizzo diretto della propria azienda (es. `azienda.piattaf
                                                         Accesso al tenant.
 ```
 
-### 5.4 Ciclo di Vita del Ticket
+### 5.5 Ciclo di Vita del Ticket
 
 ```
 [1] CREAZIONE          [2] SMISTAMENTO         [3] LAVORAZIONE        [4] CHIUSURA
@@ -239,15 +265,15 @@ SLA applicata.         manuale)                 note interne.          salvata.
 
 **Stati del ticket:**
 
-| Stato | Descrizione |
-|---|---|
-| `open` | Appena creato, in attesa di presa in carico |
-| `in_progress` | Un agente lo sta lavorando |
-| `waiting` | In attesa di risposta dal cliente |
-| `resolved` | Problema risolto |
-| `closed` | Chiuso definitivamente |
+| Stato         | Descrizione                                 |
+| ------------- | ------------------------------------------- |
+| `open`        | Appena creato, in attesa di presa in carico |
+| `in_progress` | Un agente lo sta lavorando                  |
+| `waiting`     | In attesa di risposta dal cliente           |
+| `resolved`    | Problema risolto                            |
+| `closed`      | Chiuso definitivamente                      |
 
-### 5.5 Il Triage
+### 5.6 Il Triage
 
 Quando un ticket arriva senza categoria o team associato entra in una coda **Triage**, dove agenti o capi team lo analizzano e lo smistano manualmente.
 
@@ -260,16 +286,19 @@ Il sistema usa **JWT custom** (`firebase/php-jwt`) con tre livelli di token, tut
 ### I tre token
 
 **Identity Token**
+
 - Durata: **15 minuti**.
 - Payload: `type: identity`, `sub` (user id), `email`.
 - Usato esclusivamente nel flusso OTP (Flusso A): viene emesso dopo la verifica del codice e permette all'utente di selezionare l'azienda senza inserire la password.
 
 **Access Token**
+
 - Durata: **1 ora**.
 - Payload: `type: access`, `sub`, `tenant_id`, `role_id`.
 - Autorizza tutte le operazioni all'interno del tenant. Il `tenant_id` viene verificato dal middleware `JwtMiddleware` su ogni richiesta per prevenire attacchi cross-tenant (un utente non può operare in un tenant che non gli appartiene).
 
 **Refresh Token**
+
 - Durata: **7 giorni**.
 - Stringa da 64 caratteri, salvata nel DB globale come hash SHA-256.
 - Permette di ottenere un nuovo Access Token senza ripetere il login.
@@ -287,16 +316,49 @@ Ogni ruolo ha un insieme di permessi identificati da **slug** (es. `tickets.view
 
 ## 7. Endpoint API (stato attuale)
 
-Tutti gli endpoint sono sotto `/api/v1/`. Il routing tenant è gestito dal middleware `InitializeTenancyByDomain`.
+Tutti gli endpoint sono sotto `/api/v1/`. Il routing è gestito dal middleware `InitializeTenancyByDomain` per le rotte tenant.
 
-| Metodo | Path | Descrizione | Auth |
-|---|---|---|---|
-| POST | `/api/v1/register-tenant` | Registrazione nuova azienda | Pubblica |
-| POST | `/api/v1/auth/login` | Login con email e password | Pubblica (tenant) |
-| POST | `/api/v1/auth/refresh` | Rinnovo access token | Pubblica (tenant) |
-| GET | `/api/v1/auth/me` | Dati utente corrente | JWT |
+### Dominio Centrale (`localhost`)
 
-Gli endpoint per ticket, messaggi, team, categorie e SLA sono pianificati nelle fasi successive dello sviluppo.
+| Metodo | Path                                      | Descrizione                                | Auth           |
+| ------ | ----------------------------------------- | ------------------------------------------ | -------------- |
+| POST   | `/api/v1/register-tenant`                 | Registrazione nuova azienda                | Pubblica       |
+| GET    | `/api/v1/plans`                           | Lista piani disponibili                    | Pubblica       |
+| POST   | `/api/v1/auth/global-login/request-otp`   | Richiesta OTP per login senza sottodominio | Pubblica       |
+| POST   | `/api/v1/auth/global-login/verify-otp`    | Verifica OTP, emette Identity Token        | Pubblica       |
+| GET    | `/api/v1/auth/global-login/tenants`       | Lista tenant dell'utente                   | Identity Token |
+| POST   | `/api/v1/auth/global-login/select-tenant` | Selezione tenant, emette handoff Redis     | Identity Token |
+| POST   | `/api/v1/auth/otp/verify`                 | Verifica OTP registrazione tenant          | Pubblica       |
+
+### Dominio Tenant (`{subdomain}.localhost`)
+
+| Metodo | Path                        | Descrizione                              | Auth     |
+| ------ | --------------------------- | ---------------------------------------- | -------- |
+| GET    | `/api/v1/tenant/info`       | Info tenant corrente (nome, descrizione) | Pubblica |
+| POST   | `/api/v1/auth/login`        | Login con email e password               | Pubblica |
+| POST   | `/api/v1/auth/register`     | Registrazione utente nel tenant          | Pubblica |
+| POST   | `/api/v1/auth/refresh`      | Rinnovo access token                     | Pubblica |
+| GET    | `/api/v1/auth/me`           | Dati utente corrente                     | JWT      |
+| POST   | `/api/v1/auth/logout`       | Logout, revoca refresh token             | JWT      |
+| GET    | `/api/v1/auth/store-tokens` | Handoff token cross-domain via Redis     | Pubblica |
+
+### Endpoint Admin — Da implementare
+
+| Metodo              | Path                                              | Descrizione                  |
+| ------------------- | ------------------------------------------------- | ---------------------------- |
+| GET                 | `/api/v1/admin/stats`                             | Statistiche ticket per stato |
+| GET                 | `/api/v1/admin/users`                             | Lista utenti del tenant      |
+| PATCH               | `/api/v1/admin/users/{id}/approve`                | Approva membership           |
+| PATCH               | `/api/v1/admin/users/{id}/reject`                 | Rifiuta membership           |
+| PATCH               | `/api/v1/admin/users/{id}/suspend`                | Sospende utente              |
+| PATCH               | `/api/v1/admin/users/{id}/reactivate`             | Riattiva utente sospeso      |
+| PATCH               | `/api/v1/admin/users/{id}/role`                   | Cambia ruolo utente          |
+| GET/POST/PUT/DELETE | `/api/v1/admin/teams`                             | CRUD team                    |
+| GET/POST/DELETE     | `/api/v1/admin/teams/{id}/members`                | Gestione membri team         |
+| PATCH               | `/api/v1/admin/teams/{id}/members/{user_id}/role` | Cambia ruolo membro          |
+| GET/POST/PUT/DELETE | `/api/v1/admin/categories`                        | CRUD categorie               |
+| GET/POST/PUT/DELETE | `/api/v1/admin/sla`                               | CRUD SLA policy              |
+| GET                 | `/api/v1/admin/macros`                            | Lista macro (solo lettura)   |
 
 ---
 
@@ -304,12 +366,13 @@ Gli endpoint per ticket, messaggi, team, categorie e SLA sono pianificati nelle 
 
 Le notifiche sono gestite su due canali, configurabili dall'utente nelle impostazioni:
 
-| Canale | Descrizione |
-|---|---|
+| Canale     | Descrizione                                                |
+| ---------- | ---------------------------------------------------------- |
 | **In-app** | Notifica visibile nella piattaforma, salvata nel DB tenant |
-| **Email** | Inviata tramite microservizio Go via coda Redis |
+| **Email**  | Inviata tramite microservizio Go via coda Redis            |
 
 **Eventi che generano notifiche:**
+
 - Agente risponde a un ticket → notifica al cliente.
 - Cliente risponde → notifica all'agente assegnato.
 - Ticket riassegnato → notifica ai soggetti coinvolti.
@@ -321,10 +384,10 @@ Le notifiche sono gestite su due canali, configurabili dall'utente nelle imposta
 
 ### Piani di Abbonamento
 
-| Tipo Database | Descrizione |
-|---|---|
-| **Shared** | Il tenant condivide un database con altri (economico, volumi bassi) |
-| **Dedicated** | Il tenant ha un database fisicamente separato (massima sicurezza) |
+| Tipo Database | Descrizione                                                         |
+| ------------- | ------------------------------------------------------------------- |
+| **Shared**    | Il tenant condivide un database con altri (economico, volumi bassi) |
+| **Dedicated** | Il tenant ha un database fisicamente separato (massima sicurezza)   |
 
 ### Mancato Rinnovo e Cancellazione
 
@@ -351,36 +414,36 @@ Mancato rinnovo / richiesta cancellazione
 
 ### DB Globale
 
-| Tabella | Campi principali | Note |
-|---|---|---|
-| `global_identities` | id, name, email, password, email_verified_at, deleted_at | Identità globale utente — SoftDeletes |
-| `tenants` | id (subdomain), name, plan_id, data (json) | id è il sottodominio stesso |
-| `plans` | id, name, price_month, database_type | enum: shared / dedicated |
-| `tenant_memberships` | global_user_id, tenant_id, state | enum: pending / accepted / banned |
-| `refresh_tokens` | global_identity_id, token (hash SHA-256), expires_at, revoked | Durata 7 giorni |
-| `domains` | domain, tenant_id | Gestita da stancl/tenancy |
-| `otp_codes` | user_id, code (hash), expires_at, attempts, used | Da implementare |
+| Tabella              | Campi principali                                              | Note                                  |
+| -------------------- | ------------------------------------------------------------- | ------------------------------------- |
+| `global_identities`  | id, name, email, password, email_verified_at, deleted_at      | Identità globale utente — SoftDeletes |
+| `tenants`            | id (subdomain), name, plan_id, data (json)                    | id è il sottodominio stesso           |
+| `plans`              | id, name, price_month, database_type                          | enum: shared / dedicated              |
+| `tenant_memberships` | global_user_id, tenant_id, state                              | enum: pending / accepted / banned     |
+| `refresh_tokens`     | global_identity_id, token (hash SHA-256), expires_at, revoked | Durata 7 giorni                       |
+| `domains`            | domain, tenant_id                                             | Gestita da stancl/tenancy             |
+| `otp_codes`          | user_id, code (hash), expires_at, attempts, used              | Da implementare                       |
 
 ### DB Tenant (per ogni azienda)
 
-| Tabella | Campi principali | Note |
-|---|---|---|
-| `users` | id, global_user_id, role_id, deleted_at | Profilo locale nel tenant — SoftDeletes |
-| `roles` | id, name, description | RBAC |
-| `permissions` | id, slug, description | es. `tickets.view` |
-| `permission_role` | role_id, permission_id | Pivot M2M |
-| `teams` | id, name | — |
-| `team_members` | team_id, user_id, team_role_id | PK composita |
-| `categories` | id, name, parent_category_id | Supporta gerarchie (self-join) |
-| `sla_policies` | id, name, priority, response_time_hours, resolution_time_hours | — |
-| `tickets` | id, title, description, status, priority, user_id_author, user_id_resolver, team_id, category_id, closed_at | — |
-| `messages` | id, ticket_id, user_id, body, is_internal, macro_id | is_internal: note visibili solo allo staff |
-| `attachments` | id, message_id, file_name, file_path | path su cloud storage — Da implementare |
-| `macros` | id, team_id (null = globale), created_by, title, content | Da implementare |
-| `ticket_history` | id, ticket_id, changed_by, field, old_value, new_value | Cronologia immutabile — Da implementare |
-| `notifications` | id, user_id, type, payload, read_at | Da implementare |
-| `notification_preferences` | user_id, channel, event_type, enabled | Da implementare |
-| `user_settings` | user_id, key, value | Preferenze generali — Da implementare |
+| Tabella                    | Campi principali                                                                                            | Note                                       |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `users`                    | id, global_user_id, role_id, deleted_at                                                                     | Profilo locale nel tenant — SoftDeletes    |
+| `roles`                    | id, name, description                                                                                       | RBAC                                       |
+| `permissions`              | id, slug, description                                                                                       | es. `tickets.view`                         |
+| `permission_role`          | role_id, permission_id                                                                                      | Pivot M2M                                  |
+| `teams`                    | id, name                                                                                                    | —                                          |
+| `team_members`             | team_id, user_id, team_role_id                                                                              | PK composita                               |
+| `categories`               | id, name, parent_category_id                                                                                | Supporta gerarchie (self-join)             |
+| `sla_policies`             | id, name, priority, response_time_hours, resolution_time_hours                                              | —                                          |
+| `tickets`                  | id, title, description, status, priority, user_id_author, user_id_resolver, team_id, category_id, closed_at | —                                          |
+| `messages`                 | id, ticket_id, user_id, body, is_internal, macro_id                                                         | is_internal: note visibili solo allo staff |
+| `attachments`              | id, message_id, file_name, file_path                                                                        | path su cloud storage — Da implementare    |
+| `macros`                   | id, team_id (null = globale), created_by, title, content                                                    | Da implementare                            |
+| `ticket_history`           | id, ticket_id, changed_by, field, old_value, new_value                                                      | Cronologia immutabile — Da implementare    |
+| `notifications`            | id, user_id, type, payload, read_at                                                                         | Da implementare                            |
+| `notification_preferences` | user_id, channel, event_type, enabled                                                                       | Da implementare                            |
+| `user_settings`            | user_id, key, value                                                                                         | Preferenze generali — Da implementare      |
 
 ---
 
@@ -400,21 +463,21 @@ Mancato rinnovo / richiesta cancellazione
 
 ## 12. Stato di Sviluppo
 
-| Area | Stato |
-|---|---|
-| Architettura multi-tenant ibrida | ✅ Completata |
-| Autenticazione JWT (login, refresh, me) | ✅ Completata |
-| Registrazione tenant | ✅ Completata |
-| Verifica email OTP + microservizio Go | 🔄 In sviluppo |
-| CRUD ticket e messaggi | 📋 Pianificato |
-| Gestione team, categorie, SLA via API | 📋 Pianificato |
-| Sistema notifiche (in-app + email) | 📋 Pianificato |
-| Allegati su cloud storage | 📋 Pianificato |
-| Cronologia ticket (audit trail) | 📋 Pianificato |
-| Frontend Admin (Lovable) | 🔄 In sviluppo |
-| Frontend Agente (Lovable) | 📋 Pianificato |
-| Frontend Cliente (Lovable) | 📋 Pianificato |
+| Area                                    | Stato          |
+| --------------------------------------- | -------------- |
+| Architettura multi-tenant ibrida        | ✅ Completata  |
+| Autenticazione JWT (login, refresh, me) | ✅ Completata  |
+| Registrazione tenant                    | ✅ Completata  |
+| Verifica email OTP + microservizio Go   | 🔄 In sviluppo |
+| CRUD ticket e messaggi                  | 📋 Pianificato |
+| Gestione team, categorie, SLA via API   | 📋 Pianificato |
+| Sistema notifiche (in-app + email)      | 📋 Pianificato |
+| Allegati su cloud storage               | 📋 Pianificato |
+| Cronologia ticket (audit trail)         | 📋 Pianificato |
+| Frontend Admin (Lovable)                | 🔄 In sviluppo |
+| Frontend Agente (Lovable)               | 📋 Pianificato |
+| Frontend Cliente (Lovable)              | 📋 Pianificato |
 
 ---
 
-*Documento v1.2 — Progetto di Informatica, quinto anno*
+_Documento v1.3 — Progetto di Informatica, quinto anno_
