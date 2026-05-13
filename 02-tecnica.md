@@ -28,10 +28,12 @@
 ```bash
 # Backend Laravel
 git clone https://github.com/gambadaniele1-hue/ticketing-api.git
-cd ticketing-api
 
 # Microservizio mail Go
 git clone https://github.com/gambadaniele1-hue/ticketing-mail.git
+
+# Frontend React
+git clone https://github.com/gambadaniele1-hue/ticketing-app.git
 ```
 
 ### 2.2 Configurare il backend Laravel
@@ -80,17 +82,41 @@ TENANCY_DATABASE_AUTO_DELETE=false
 CENTRAL_DOMAINS=localhost
 ```
 
-### 2.4 Eseguire le migration
+### 2.4 Eseguire le migration e avviare
 
 ```bash
 # Migration del database globale + seeder (piani, ruoli ecc.)
-php artisan migrate --seed
+php artisan migrate:fresh --seed
 
 # Migration del database tenant condiviso (shared)
-php artisan migrate --database="shared" --path="database/migrations/tenant"
+php artisan migrate:fresh --database="shared" --path="database/migrations/tenant"
 
 # Avvia il server
 php artisan serve
+
+# Avvia il worker per la coda Redis (in un terminale separato)
+php artisan queue:work
+```
+
+### 2.5 Avviare il frontend
+
+```bash
+cd ticketing-app
+
+# Copia il file di configurazione
+cp .env.example .env
+
+# Avvia il server di sviluppo
+npm run dev
+```
+
+### 2.6 Avviare il microservizio mail
+
+```bash
+cd ticketing-mail
+
+# Avvia il microservizio
+go run ./main.go
 ```
 
 ---
@@ -392,28 +418,51 @@ user_settings                      -- da implementare
 
 ## 8. Struttura Route API
 
-Le route sono definite in `routes/api_v1.php`. Il file `routes/api.php` contiene solo la rotta Sanctum legacy (non in uso attivo).
+Le route sono definite in `routes/api_v1.php`, registrato in `bootstrap/app.php` con prefisso `api/v1`. Il file `routes/api.php` contiene solo la rotta Sanctum legacy (non in uso attivo).
 
 ```php
 // routes/api_v1.php
 
-// Route pubbliche tenant
-Route::middleware([InitializeTenancyByDomain::class, PreventAccessFromCentralDomains::class])
-    ->prefix('v1')->group(function () {
+// --- ROUTE DOMINIO CENTRALE (nessun middleware tenancy) ---
 
-        Route::post('/auth/login',   [AuthController::class, 'login']);
-        Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+// Registrazione tenant
+Route::post('/register-tenant', [TenantRegistrationController::class, 'store']);
+
+// Piani disponibili
+Route::get('/plans', [PlanController::class, 'index']);
+
+// Flusso global login (OTP senza sottodominio)
+Route::post('/auth/global-login/request-otp', [OtpController::class, 'requestOtp']);
+Route::post('/auth/global-login/verify-otp',  [OtpController::class, 'verify']);
+Route::middleware('identity.auth')->group(function () {
+    Route::get('/auth/global-login/tenants',         [OtpController::class, 'tenants']);
+    Route::post('/auth/global-login/select-tenant',  [OtpController::class, 'selectTenant']);
+});
+
+// Verifica OTP registrazione tenant
+Route::post('/auth/otp/verify', [OtpController::class, 'verify']);
+
+// --- ROUTE DOMINIO TENANT ---
+Route::middleware([InitializeTenancyByDomain::class, PreventAccessFromCentralDomains::class])
+    ->group(function () {
+
+        // Info tenant (pubblica — usata dalla pagina login)
+        Route::get('/tenant/info', [TenantController::class, 'info']);
+
+        // Auth pubbliche
+        Route::post('/auth/login',    [AuthController::class, 'login']);
+        Route::post('/auth/register', [AuthController::class, 'register']);
+        Route::post('/auth/refresh',  [AuthController::class, 'refresh']);
+
+        // Handoff token cross-domain
+        Route::get('/auth/store-tokens', [AuthController::class, 'storeTokens']);
 
         // Route protette da JWT
         Route::middleware('jwt.auth')->group(function () {
-            Route::get('/auth/me', [AuthController::class, 'me']);
+            Route::get('/auth/me',      [AuthController::class, 'me']);
+            Route::post('/auth/logout', [AuthController::class, 'logout']);
         });
     });
-
-// Route globali (nessun middleware tenancy)
-Route::prefix('v1')->group(function () {
-    Route::post('/register-tenant', [TenantRegistrationController::class, 'store']);
-});
 ```
 
 ---
@@ -458,8 +507,8 @@ Tutti gli endpoint sono sotto `/api/v1/`. Le versioni future useranno `/api/v2/`
 | Autenticazione JWT (login, refresh, me) | ✅ Completata              |
 | Registrazione tenant                    | ✅ Completata              |
 | RBAC ruoli e permessi                   | ✅ Struttura DB completata |
-| Verifica email OTP                      | 🔄 In sviluppo             |
-| Microservizio Go + Redis                | 🔄 In sviluppo             |
+| Verifica email OTP                      | ✅ Completata              |
+| Microservizio Go + Redis                | ✅ Completata              |
 | CRUD ticket e messaggi                  | 📋 Pianificato             |
 | Gestione team e categorie               | 📋 Pianificato             |
 | SLA collegata ai ticket                 | 📋 Pianificato             |
@@ -470,4 +519,4 @@ Tutti gli endpoint sono sotto `/api/v1/`. Le versioni future useranno `/api/v2/`
 
 ---
 
-_Documento v1.1 — Progetto di Informatica, quinto anno_
+_Documento v1.2 — Progetto di Informatica, quinto anno_
