@@ -1,5 +1,4 @@
 # Ticketing — Guida Utente
-
 ## Come usare la piattaforma
 
 **Versione:** 1.1
@@ -94,13 +93,13 @@ Il cliente è chi apre le richieste di assistenza.
 
 Dalla tua dashboard puoi vedere tutti i tuoi ticket con il relativo stato:
 
-| Stato              | Significato                         |
-| ------------------ | ----------------------------------- |
-| **Aperto**         | In attesa di essere preso in carico |
-| **In lavorazione** | Un agente ci sta lavorando          |
-| **In attesa**      | Lo staff aspetta una tua risposta   |
-| **Risolto**        | Il problema è stato risolto         |
-| **Chiuso**         | Ticket chiuso definitivamente       |
+| Stato | Significato |
+|---|---|
+| **Aperto** | In attesa di essere preso in carico |
+| **In lavorazione** | Un agente ci sta lavorando |
+| **In attesa** | Lo staff aspetta una tua risposta |
+| **Risolto** | Il problema è stato risolto |
+| **Chiuso** | Ticket chiuso definitivamente |
 
 ### 4.3 Rispondere a un ticket
 
@@ -111,7 +110,6 @@ Dalla tua dashboard puoi vedere tutti i tuoi ticket con il relativo stato:
 ### 4.4 Chiudere un ticket
 
 Quando il tuo problema è risolto puoi chiudere il ticket:
-
 1. Apri il ticket.
 2. Clicca su **Segna come risolto**.
 
@@ -173,7 +171,9 @@ Il capo team supervisiona il lavoro del suo gruppo e ha tutte le capacità di un
 
 ---
 
-## 7. Guida per l'Amministratore
+## 7. Guida per l'Amministratore **[UI dimostrativa]**
+
+> Le funzionalità del pannello Admin sono visibili nell'interfaccia con dati mock ma non ancora collegate al backend. Verranno rese operative in una versione futura.
 
 L'amministratore gestisce l'intero ambiente aziendale sulla piattaforma.
 
@@ -248,4 +248,4 @@ La gestione ticket è in fase di sviluppo. Sarà disponibile in una versione fut
 
 ---
 
-_Documento v1.1 — Progetto di Informatica, quinto anno_
+*Documento v1.2 — Progetto di Informatica, quinto anno*
