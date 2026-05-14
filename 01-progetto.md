@@ -342,7 +342,7 @@ Tutti gli endpoint sono sotto `/api/v1/`. Il routing è gestito dal middleware `
 | POST   | `/api/v1/auth/logout`       | Logout, revoca refresh token             | JWT      |
 | GET    | `/api/v1/auth/store-tokens` | Handoff token cross-domain via Redis     | Pubblica |
 
-### Endpoint Admin — Da implementare
+### Endpoint Admin — Da implementare (stub pronti)
 
 | Metodo              | Path                                              | Descrizione                  |
 | ------------------- | ------------------------------------------------- | ---------------------------- |
@@ -357,8 +357,30 @@ Tutti gli endpoint sono sotto `/api/v1/`. Il routing è gestito dal middleware `
 | GET/POST/DELETE     | `/api/v1/admin/teams/{id}/members`                | Gestione membri team         |
 | PATCH               | `/api/v1/admin/teams/{id}/members/{user_id}/role` | Cambia ruolo membro          |
 | GET/POST/PUT/DELETE | `/api/v1/admin/categories`                        | CRUD categorie               |
+| POST                | `/api/v1/admin/categories/{id}/teams`             | Associa team a categoria     |
+| DELETE              | `/api/v1/admin/categories/{id}/teams/{team_id}`   | Rimuovi associazione         |
 | GET/POST/PUT/DELETE | `/api/v1/admin/sla`                               | CRUD SLA policy              |
 | GET                 | `/api/v1/admin/macros`                            | Lista macro (solo lettura)   |
+
+### Endpoint Customer — Da implementare (stub pronti)
+
+| Metodo | Path                                     | Descrizione              |
+| ------ | ---------------------------------------- | ------------------------ |
+| GET    | `/api/v1/customer/tickets`               | Lista ticket dell'utente |
+| POST   | `/api/v1/customer/tickets`               | Crea nuovo ticket        |
+| GET    | `/api/v1/customer/tickets/{id}`          | Dettaglio ticket         |
+| POST   | `/api/v1/customer/tickets/{id}/messages` | Invia messaggio          |
+| PATCH  | `/api/v1/customer/tickets/{id}/close`    | Chiude ticket            |
+
+### Endpoint Agent — Da implementare (stub pronti)
+
+| Metodo | Path                                  | Descrizione                    |
+| ------ | ------------------------------------- | ------------------------------ |
+| GET    | `/api/v1/agent/tickets`               | Lista ticket del tenant        |
+| GET    | `/api/v1/agent/tickets/{id}`          | Dettaglio ticket               |
+| PATCH  | `/api/v1/agent/tickets/{id}/take`     | Prende in carico ticket        |
+| POST   | `/api/v1/agent/tickets/{id}/messages` | Invia messaggio o nota interna |
+| PATCH  | `/api/v1/agent/tickets/{id}/status`   | Aggiorna stato ticket          |
 
 ---
 
@@ -464,21 +486,32 @@ Mancato rinnovo / richiesta cancellazione
 
 ## 12. Stato di Sviluppo
 
-| Area                                    | Stato          |
-| --------------------------------------- | -------------- |
-| Architettura multi-tenant ibrida        | ✅ Completata  |
-| Autenticazione JWT (login, refresh, me) | ✅ Completata  |
-| Registrazione tenant                    | ✅ Completata  |
-| Verifica email OTP + microservizio Go   | ✅ Completata  |
-| CRUD ticket e messaggi                  | 📋 Pianificato |
-| Gestione team, categorie, SLA via API   | 📋 Pianificato |
-| Sistema notifiche (in-app + email)      | 📋 Pianificato |
-| Allegati su cloud storage               | 📋 Pianificato |
-| Cronologia ticket (audit trail)         | 📋 Pianificato |
-| Frontend Admin (Claude Design)          | 🔄 In sviluppo |
-| Frontend Agente (Claude Design)         | 🔄 In sviluppo |
-| Frontend Cliente (Claude Design)        | 🔄 In sviluppo |
+| Area                                                        | Stato                                  |
+| ----------------------------------------------------------- | -------------------------------------- |
+| Architettura multi-tenant ibrida                            | ✅ Completata                          |
+| Autenticazione JWT (login, refresh, me, logout)             | ✅ Completata                          |
+| Registrazione tenant con OTP                                | ✅ Completata                          |
+| Registrazione utente nel tenant                             | ✅ Completata                          |
+| Flusso global login (OTP + select tenant)                   | ✅ Completata                          |
+| Handoff token cross-domain via Redis                        | ✅ Completata                          |
+| Verifica email tramite OTP                                  | ✅ Completata                          |
+| Notifica Admin per nuovi utenti pending                     | ✅ Completata                          |
+| Microservizio Go + Redis                                    | ✅ Completata                          |
+| RBAC ruoli e permessi                                       | ✅ Struttura DB completata             |
+| CheckPermission middleware                                  | ✅ Completata                          |
+| Piani disponibili (GET /plans)                              | ✅ Completata                          |
+| Info tenant (GET /tenant/info)                              | ✅ Completata                          |
+| Endpoint Admin (stats, users, teams, categorie, SLA, macro) | 🔄 Stub pronti, logica da implementare |
+| Endpoint Customer (tickets CRUD)                            | 🔄 Stub pronti, logica da implementare |
+| Endpoint Agent (tickets, presa in carico, messaggi)         | 🔄 Stub pronti, logica da implementare |
+| SLA collegata ai ticket                                     | 📋 Da implementare                     |
+| Allegati su cloud storage                                   | 📋 Da implementare                     |
+| Notifiche in-app e email                                    | 📋 Da implementare                     |
+| Cronologia ticket                                           | 📋 Da implementare                     |
+| Frontend Admin (React + Tailwind) — dati mock               | ✅ UI completata                       |
+| Frontend Agente (React + Tailwind) — dati mock              | ✅ UI completata                       |
+| Frontend Cliente (React + Tailwind) — dati mock             | ✅ UI completata                       |
 
 ---
 
-_Documento v1.4 — Progetto di Informatica, quinto anno_
+_Documento v1.5 — Progetto di Informatica, quinto anno_
