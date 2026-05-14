@@ -503,24 +503,31 @@ Tutti gli endpoint sono sotto `/api/v1/`. Le versioni future useranno `/api/v2/`
 
 ---
 
-## 10. Stato Implementazione
+## 11. Stato Implementazione
 
-| Feature                                 | Stato                      |
-| --------------------------------------- | -------------------------- |
-| Multi-tenancy ibrida (stancl/tenancy)   | ✅ Completata              |
-| Autenticazione JWT (login, refresh, me) | ✅ Completata              |
-| Registrazione tenant                    | ✅ Completata              |
-| RBAC ruoli e permessi                   | ✅ Struttura DB completata |
-| Verifica email OTP                      | ✅ Completata              |
-| Microservizio Go + Redis                | ✅ Completata              |
-| CRUD ticket e messaggi                  | 📋 Pianificato             |
-| Gestione team e categorie               | 📋 Pianificato             |
-| SLA collegata ai ticket                 | 📋 Pianificato             |
-| Allegati su cloud storage               | 📋 Pianificato             |
-| Notifiche in-app e email                | 📋 Pianificato             |
-| Cronologia ticket                       | 📋 Pianificato             |
-| Macros                                  | 📋 Pianificato             |
+| Feature                                                     | Stato                                  |
+| ----------------------------------------------------------- | -------------------------------------- |
+| Multi-tenancy ibrida (stancl/tenancy)                       | ✅ Completata                          |
+| Autenticazione JWT (login, refresh, me, logout)             | ✅ Completata                          |
+| Registrazione tenant con OTP                                | ✅ Completata                          |
+| Registrazione utente nel tenant                             | ✅ Completata                          |
+| Flusso global login (OTP + select tenant)                   | ✅ Completata                          |
+| Handoff token cross-domain via Redis                        | ✅ Completata                          |
+| Verifica email tramite OTP                                  | ✅ Completata                          |
+| Notifica Admin per nuovi utenti pending                     | ✅ Completata                          |
+| Microservizio Go + Redis                                    | ✅ Completata                          |
+| RBAC ruoli e permessi                                       | ✅ Struttura DB completata             |
+| CheckPermission middleware                                  | ✅ Completata                          |
+| Piani disponibili (GET /plans)                              | ✅ Completata                          |
+| Info tenant (GET /tenant/info)                              | ✅ Completata                          |
+| Endpoint Admin (stats, users, teams, categorie, SLA, macro) | 🔄 Stub pronti, logica da implementare |
+| Endpoint Customer (tickets CRUD)                            | 🔄 Stub pronti, logica da implementare |
+| Endpoint Agent (tickets, presa in carico, messaggi)         | 🔄 Stub pronti, logica da implementare |
+| SLA collegata ai ticket                                     | 📋 Da implementare                     |
+| Allegati su cloud storage                                   | 📋 Da implementare                     |
+| Notifiche in-app e email                                    | 📋 Da implementare                     |
+| Cronologia ticket                                           | 📋 Da implementare                     |
 
 ---
 
-_Documento v1.3 — Progetto di Informatica, quinto anno_
+_Documento v1.2 — Progetto di Informatica, quinto anno_
