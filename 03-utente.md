@@ -1,4 +1,5 @@
 # Ticketing — Guida Utente
+
 ## Come usare la piattaforma
 
 **Versione:** 1.1
@@ -93,13 +94,13 @@ Il cliente è chi apre le richieste di assistenza.
 
 Dalla tua dashboard puoi vedere tutti i tuoi ticket con il relativo stato:
 
-| Stato | Significato |
-|---|---|
-| **Aperto** | In attesa di essere preso in carico |
-| **In lavorazione** | Un agente ci sta lavorando |
-| **In attesa** | Lo staff aspetta una tua risposta |
-| **Risolto** | Il problema è stato risolto |
-| **Chiuso** | Ticket chiuso definitivamente |
+| Stato              | Significato                         |
+| ------------------ | ----------------------------------- |
+| **Aperto**         | In attesa di essere preso in carico |
+| **In lavorazione** | Un agente ci sta lavorando          |
+| **In attesa**      | Lo staff aspetta una tua risposta   |
+| **Risolto**        | Il problema è stato risolto         |
+| **Chiuso**         | Ticket chiuso definitivamente       |
 
 ### 4.3 Rispondere a un ticket
 
@@ -110,6 +111,7 @@ Dalla tua dashboard puoi vedere tutti i tuoi ticket con il relativo stato:
 ### 4.4 Chiudere un ticket
 
 Quando il tuo problema è risolto puoi chiudere il ticket:
+
 1. Apri il ticket.
 2. Clicca su **Segna come risolto**.
 
@@ -177,7 +179,7 @@ Il capo team supervisiona il lavoro del suo gruppo e ha tutte le capacità di un
 
 L'amministratore gestisce l'intero ambiente aziendale sulla piattaforma.
 
-### 7.1 Gestione utenti ✅
+### 7.1 Gestione utenti
 
 Dalla sezione **Utenti** puoi:
 
@@ -188,7 +190,7 @@ Dalla sezione **Utenti** puoi:
 - **Riattivare** un utente sospeso.
 - **Cambiare il ruolo** di un utente (Admin, Agent, Team Lead, Customer).
 
-### 7.2 Gestione team ✅
+### 7.2 Gestione team
 
 1. Vai su **Team**.
 2. Clicca su **Nuovo Team** e assegnagli un nome.
@@ -199,25 +201,30 @@ Dalla sezione **Utenti** puoi:
 
 > **Nota:** Se rimuovi l'unico Team Lead del team, il sistema ti avviserà prima di procedere.
 
-### 7.3 Gestione categorie ✅
+### 7.3 Gestione categorie
 
 1. Vai su **Categorie**.
 2. Crea, modifica ed elimina categorie.
 3. Puoi creare sottocategorie selezionando una categoria padre.
+4. Per ogni categoria puoi associare uno o più **team** responsabili.
+   Questa associazione viene usata dal sistema per il routing automatico
+   dei ticket: quando un cliente apre un ticket con quella categoria,
+   il sistema seleziona il team più appropriato in base al carico di
+   lavoro corrente.
 
-### 7.4 Gestione SLA ✅
+### 7.4 Gestione SLA
 
 1. Vai su **SLA**.
 2. Crea policy con nome, priorità, ore massime per la prima risposta e per la risoluzione.
 3. Modifica o elimina le policy esistenti.
 
-### 7.5 Macro ✅
+### 7.5 Macro
 
 Dalla sezione **Macro** puoi visualizzare le risposte preimpostate disponibili per i tuoi agenti. Le macro globali sono visibili a tutto lo staff.
 
 > La creazione di nuove macro dall'interfaccia è pianificata per una versione futura.
 
-### 7.6 Dashboard ✅
+### 7.6 Dashboard
 
 Dalla dashboard principale puoi vedere i numeri chiave del supporto: ticket aperti, in lavorazione, in attesa e chiusi.
 
@@ -248,4 +255,4 @@ La gestione ticket è in fase di sviluppo. Sarà disponibile in una versione fut
 
 ---
 
-*Documento v1.2 — Progetto di Informatica, quinto anno*
+_Documento v1.2 — Progetto di Informatica, quinto anno_

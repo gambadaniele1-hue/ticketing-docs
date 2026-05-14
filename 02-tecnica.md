@@ -376,6 +376,10 @@ team_members
 categories
   id, name, parent_category_id (FK→self, nullable), tenant_id
 
+category_team                      -- pivot M2M categorie/team
+  category_id (FK CASCADE), team_id (FK CASCADE), tenant_id
+  PK composita (category_id, team_id)
+
 sla_policies
   id, name (UNIQUE), priority (int),
   response_time_hours, resolution_time_hours, tenant_id
@@ -519,4 +523,4 @@ Tutti gli endpoint sono sotto `/api/v1/`. Le versioni future useranno `/api/v2/`
 
 ---
 
-_Documento v1.2 — Progetto di Informatica, quinto anno_
+_Documento v1.3 — Progetto di Informatica, quinto anno_

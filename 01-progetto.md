@@ -426,24 +426,25 @@ Mancato rinnovo / richiesta cancellazione
 
 ### DB Tenant (per ogni azienda)
 
-| Tabella                    | Campi principali                                                                                            | Note                                       |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `users`                    | id, global_user_id, role_id, deleted_at                                                                     | Profilo locale nel tenant — SoftDeletes    |
-| `roles`                    | id, name, description                                                                                       | RBAC                                       |
-| `permissions`              | id, slug, description                                                                                       | es. `tickets.view`                         |
-| `permission_role`          | role_id, permission_id                                                                                      | Pivot M2M                                  |
-| `teams`                    | id, name                                                                                                    | —                                          |
-| `team_members`             | team_id, user_id, team_role_id                                                                              | PK composita                               |
-| `categories`               | id, name, parent_category_id                                                                                | Supporta gerarchie (self-join)             |
-| `sla_policies`             | id, name, priority, response_time_hours, resolution_time_hours                                              | —                                          |
-| `tickets`                  | id, title, description, status, priority, user_id_author, user_id_resolver, team_id, category_id, closed_at | —                                          |
-| `messages`                 | id, ticket_id, user_id, body, is_internal, macro_id                                                         | is_internal: note visibili solo allo staff |
-| `attachments`              | id, message_id, file_name, file_path                                                                        | path su cloud storage — Da implementare    |
-| `macros`                   | id, team_id (null = globale), created_by, title, content                                                    | Da implementare                            |
-| `ticket_history`           | id, ticket_id, changed_by, field, old_value, new_value                                                      | Cronologia immutabile — Da implementare    |
-| `notifications`            | id, user_id, type, payload, read_at                                                                         | Da implementare                            |
-| `notification_preferences` | user_id, channel, event_type, enabled                                                                       | Da implementare                            |
-| `user_settings`            | user_id, key, value                                                                                         | Preferenze generali — Da implementare      |
+| Tabella                    | Campi principali                                                                                            | Note                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `users`                    | id, global_user_id, role_id, deleted_at                                                                     | Profilo locale nel tenant — SoftDeletes             |
+| `roles`                    | id, name, description                                                                                       | RBAC                                                |
+| `permissions`              | id, slug, description                                                                                       | es. `tickets.view`                                  |
+| `permission_role`          | role_id, permission_id                                                                                      | Pivot M2M                                           |
+| `teams`                    | id, name                                                                                                    | —                                                   |
+| `team_members`             | team_id, user_id, team_role_id                                                                              | PK composita                                        |
+| `categories`               | id, name, parent_category_id                                                                                | Supporta gerarchie (self-join)                      |
+| `category_team`            | category_id, team_id, tenant_id                                                                             | Pivot M2M — associa categorie a team per il routing |
+| `sla_policies`             | id, name, priority, response_time_hours, resolution_time_hours                                              | —                                                   |
+| `tickets`                  | id, title, description, status, priority, user_id_author, user_id_resolver, team_id, category_id, closed_at | —                                                   |
+| `messages`                 | id, ticket_id, user_id, body, is_internal, macro_id                                                         | is_internal: note visibili solo allo staff          |
+| `attachments`              | id, message_id, file_name, file_path                                                                        | path su cloud storage — Da implementare             |
+| `macros`                   | id, team_id (null = globale), created_by, title, content                                                    | Da implementare                                     |
+| `ticket_history`           | id, ticket_id, changed_by, field, old_value, new_value                                                      | Cronologia immutabile — Da implementare             |
+| `notifications`            | id, user_id, type, payload, read_at                                                                         | Da implementare                                     |
+| `notification_preferences` | user_id, channel, event_type, enabled                                                                       | Da implementare                                     |
+| `user_settings`            | user_id, key, value                                                                                         | Preferenze generali — Da implementare               |
 
 ---
 
@@ -468,16 +469,16 @@ Mancato rinnovo / richiesta cancellazione
 | Architettura multi-tenant ibrida        | ✅ Completata  |
 | Autenticazione JWT (login, refresh, me) | ✅ Completata  |
 | Registrazione tenant                    | ✅ Completata  |
-| Verifica email OTP + microservizio Go   | 🔄 In sviluppo |
+| Verifica email OTP + microservizio Go   | ✅ Completata  |
 | CRUD ticket e messaggi                  | 📋 Pianificato |
 | Gestione team, categorie, SLA via API   | 📋 Pianificato |
 | Sistema notifiche (in-app + email)      | 📋 Pianificato |
 | Allegati su cloud storage               | 📋 Pianificato |
 | Cronologia ticket (audit trail)         | 📋 Pianificato |
-| Frontend Admin (Lovable)                | 🔄 In sviluppo |
-| Frontend Agente (Lovable)               | 📋 Pianificato |
-| Frontend Cliente (Lovable)              | 📋 Pianificato |
+| Frontend Admin (Claude Design)          | 🔄 In sviluppo |
+| Frontend Agente (Claude Design)         | 🔄 In sviluppo |
+| Frontend Cliente (Claude Design)        | 🔄 In sviluppo |
 
 ---
 
-_Documento v1.3 — Progetto di Informatica, quinto anno_
+_Documento v1.4 — Progetto di Informatica, quinto anno_
